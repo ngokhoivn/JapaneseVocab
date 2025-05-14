@@ -16,102 +16,94 @@
       --error: #cf6679;
       --success: #4caf50;
     }
-
+    
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-
+    
     body {
-      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: var(--bg-dark);
       color: var(--text-light);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      line-height: 1.5;
+      transition: all 0.3s ease;
     }
-
+    
     .container {
       width: 100%;
       max-width: 800px;
       margin: 0 auto;
-      padding: 16px;
+      padding: 20px;
       flex: 1;
     }
-
+    
     h1 {
       text-align: center;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       color: var(--primary);
-      font-size: clamp(1.5rem, 5vw, 2rem);
     }
-
+    
     .tabs {
       display: flex;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       border-bottom: 1px solid var(--primary-dark);
-      flex-wrap: wrap;
-      gap: 8px;
     }
-
+    
     .tab {
-      padding: 8px 16px;
+      padding: 10px 20px;
       cursor: pointer;
       background-color: var(--bg-card);
       color: var(--text-light);
       border: none;
-      transition: background-color 0.2s ease;
-      flex: 1;
-      text-align: center;
-      font-size: clamp(14px, 4vw, 16px);
+      transition: all 0.3s ease;
     }
-
+    
     .tab.active {
       background-color: var(--primary-dark);
       color: white;
     }
-
+    
     .tab-content {
       background-color: var(--bg-card);
-      padding: 16px;
-      border-radius: 4px;
+      padding: 20px;
+      border-radius: 0 0 4px 4px;
       display: none;
     }
-
+    
     .tab-content.active {
       display: block;
     }
-
+    
     textarea, input[type="text"], input[type="number"] {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 12px;
+      padding: 12px;
+      margin-bottom: 15px;
       background-color: #2d2d2d;
       border: 1px solid #444;
       color: var(--text-light);
       border-radius: 4px;
-      font-size: clamp(14px, 4vw, 16px);
+      font-size: 16px;
     }
-
+    
     textarea {
-      min-height: 150px;
+      min-height: 200px;
       resize: vertical;
     }
-
+    
     .checkbox-container {
-      margin-bottom: 12px;
+      margin-bottom: 15px;
       display: flex;
       align-items: center;
     }
-
+    
     .checkbox-container input {
-      margin-right: 8px;
-      width: 18px;
-      height: 18px;
+      margin-right: 10px;
     }
-
+    
     button {
       background-color: var(--primary);
       color: black;
@@ -119,225 +111,172 @@
       padding: 12px 20px;
       cursor: pointer;
       border-radius: 4px;
-      font-size: clamp(14px, 4vw, 16px);
-      font-weight: 600;
-      transition: background-color 0.2s ease;
-      touch-action: manipulation; /* Improve touch responsiveness */
+      font-size: 16px;
+      font-weight: bold;
+      margin-right: 10px;
+      transition: all 0.2s ease;
     }
-
+    
     button:hover {
       background-color: var(--primary-dark);
       color: white;
     }
-
+    
     button:disabled {
       background-color: #555;
       cursor: not-allowed;
     }
-
+    
     .input-group {
-      margin-bottom: 12px;
+      margin-bottom: 15px;
     }
-
+    
     .input-group label {
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
       color: var(--text-light);
-      font-size: clamp(14px, 4vw, 16px);
     }
-
+    
     .progress-container {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
-
+    
     .progress-info {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 8px;
-      font-size: clamp(14px, 4vw, 16px);
+      margin-bottom: 5px;
     }
-
+    
     .progress-bar {
       height: 8px;
       background-color: #444;
       border-radius: 4px;
       overflow: hidden;
     }
-
+    
     .progress-bar-fill {
       height: 100%;
       background-color: var(--primary);
       transition: width 0.3s ease;
     }
-
+    
     .kanji-display {
-      font-size: clamp(32px, 12vw, 64px);
+      font-size: 72px;
       text-align: center;
-      margin: 16px 0;
-      min-height: 64px;
-      word-break: break-word;
-      overflow-wrap: break-word;
+      margin: 30px 0;
+      min-height: 100px;
     }
-
+    
     .result {
-      margin: 12px 0;
-      padding: 8px;
+      margin: 15px 0;
+      padding: 10px;
       border-radius: 4px;
       text-align: center;
-      font-size: clamp(14px, 4vw, 16px);
-      font-weight: 600;
+      font-size: 18px;
+      font-weight: bold;
     }
-
+    
     .result.correct {
       background-color: rgba(76, 175, 80, 0.2);
       color: var(--success);
     }
-
+    
     .result.incorrect {
       background-color: rgba(207, 102, 121, 0.2);
       color: var(--error);
     }
-
+    
     .meaning {
-      margin: 12px 0;
+      margin: 15px 0;
       text-align: center;
-      font-size: clamp(14px, 4vw, 16px);
-      word-break: break-word;
-      overflow-wrap: break-word;
-      line-height: 1.4;
-      max-width: 100%;
+      font-size: 24px;
+      min-height: 36px;
     }
-
+    
     .button-container {
       display: flex;
       justify-content: center;
-      margin-top: 16px;
-      flex-wrap: wrap;
-      gap: 8px;
+      margin-top: 20px;
     }
-
-    .button-container button {
-      flex: 1 0 120px;
-      padding: 12px;
-    }
-
+    
     .hidden {
       display: none;
     }
-
+    
     footer {
       text-align: center;
-      padding: 16px;
+      padding: 20px;
       color: var(--text-muted);
-      font-size: clamp(12px, 3vw, 14px);
+      font-size: 14px;
     }
-
+    
     .shortcuts {
-      margin-top: 16px;
-      padding: 12px;
+      margin-top: 20px;
+      padding: 10px;
       background-color: #2d2d2d;
       border-radius: 4px;
     }
-
+    
     .shortcuts h3 {
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       color: var(--accent);
-      font-size: clamp(14px, 4vw, 16px);
     }
-
+    
     .shortcuts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
     }
-
+    
     .shortcut {
       display: flex;
       justify-content: space-between;
-      font-size: clamp(12px, 3vw, 14px);
     }
-
+    
     .shortcut-key {
       background-color: #444;
-      padding: 2px 6px;
+      padding: 2px 8px;
       border-radius: 4px;
       font-family: monospace;
     }
-
+    
     #wordList .wrong-word {
-      padding: 4px 0;
+      padding: 5px 0;
       border-bottom: 1px solid #444;
-      font-size: clamp(12px, 3vw, 14px);
-    }
-
-    @media (max-width: 600px) {
-      .container {
-        padding: 12px;
-      }
-
-      .tab {
-        padding: 6px 12px;
-      }
-
-      .button-container {
-        flex-direction: column;
-      }
-
-      .button-container button {
-        width: 100%;
-        padding: 12px;
-        margin: 4px 0;
-      }
-
-      .shortcuts-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .meaning {
-        font-size: 14px;
-        padding: 0 4px;
-        max-height: none; /* Remove fixed max-height */
-        overflow-y: visible; /* Avoid unnecessary scrolling */
-      }
-
-      .kanji-display {
-        font-size: clamp(28px, 10vw, 48px);
-      }
-
-      textarea, input[type="text"], input[type="number"] {
-        padding: 8px;
-      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Học từ vựng tiếng Nhật</h1>
-
-    <div class="tabs" role="tablist">
-      <button class="tab active" data-tab="input" role="tab" aria-selected="true">Nhập từ vựng</button>
-      <button class="tab" data-tab="learning" role="tab" aria-selected="false">Học từ vựng</button>
-      <button class="tab" data-tab="wrong" role="tab" aria-selected="false">Danh sách từ sai</button>
+    
+    <div class="tabs">
+      <button class="tab active" data-tab="input">Nhập từ vựng</button>
+      <button class="tab" data-tab="learning" disabled>Học từ vựng</button>
+      <button class="tab" data-tab="wrong" disabled>Danh sách từ sai</button>
     </div>
-
-    <div class="tab-content active" id="input" role="tabpanel">
+    
+    <!-- Tab Nhập từ vựng -->
+    <div class="tab-content active" id="input">
       <div class="input-group">
-        <label for="vocabInput">Nhập danh sách từ vựng (định dạng: Kanji=Hiragana=Nghĩa tiếng Việt)</label>
-        <textarea id="vocabInput" placeholder="Ví dụ: 持ち物=もちもの=Mang hành lý đến nhà bạn"></textarea>
+        <label for="vocabularyInput">Nhập danh sách từ vựng (định dạng: Kanji=Hiragana=Nghĩa tiếng Việt)</label>
+        <textarea id="vocabularyInput" placeholder="赤い=あかい=đỏ&#10;青い=あおい=xanh lam&#10;白い=しろい=trắng"></textarea>
       </div>
-
+      
       <div class="checkbox-container">
-        <input type="checkbox" id="shuffleVocab">
-        <label for="shuffleVocab">Đảo thứ tự từ vựng</label>
+        <input type="checkbox" id="shuffleCheckbox">
+        <label for="shuffleCheckbox">Đảo thứ tự từ vựng</label>
       </div>
-
+      
       <div class="input-group">
         <label for="cycleCount">Số chu kỳ lặp lại</label>
-        <input type="number" id="cycleCount" min="1" value="2">
+        <input type="number" id="cycleCount" value="2" min="1" max="10">
       </div>
-
-      <button id="startLearning">Bắt đầu học</button>
-
+      
+      <div class="button-container">
+        <button id="startLearning">Bắt đầu học</button>
+      </div>
+      
       <div class="shortcuts">
         <h3>Phím tắt</h3>
         <div class="shortcuts-grid">
@@ -360,8 +299,9 @@
         </div>
       </div>
     </div>
-
-    <div class="tab-content" id="learning" role="tabpanel">
+    
+    <!-- Tab Học từ vựng -->
+    <div class="tab-content" id="learning">
       <div class="progress-container">
         <div class="progress-info">
           <span id="progressText">0/0</span>
@@ -371,56 +311,45 @@
           <div class="progress-bar-fill" style="width: 0%"></div>
         </div>
       </div>
-
-      <div class="kanji-display" id="kanjiDisplay" aria-live
+      
+      <div class="kanji-display" id="kanjiDisplay"></div>
+      
       <div class="input-group">
         <label for="answerInput">Nhập Hiragana:</label>
         <input type="text" id="answerInput" placeholder="Nhập phiên âm Hiragana">
       </div>
-
+      
       <div class="button-container">
         <button id="checkAnswer">Kiểm tra (Enter)</button>
         <button id="skipWord">Bỏ từ này (Ctrl+S)</button>
       </div>
-
+      
       <div class="result hidden" id="result"></div>
-      <div class="meaning" id="meaning" aria-live="polite"></div>
-
+      
+      <div class="meaning" id="meaning"></div>
+      
       <div class="button-container">
         <button id="restartLearning">Học lại từ đầu</button>
       </div>
     </div>
-
-    <div class="tab-content" id="wrong" role="tabpanel">
+    
+    <!-- Tab Danh sách từ sai -->
+    <div class="tab-content" id="wrong">
       <h2>Danh sách từ vựng sai</h2>
-      <div id="wordList"></div>
+      <textarea id="wrongWords" readonly></textarea>
+      
       <div class="button-container">
-        <button id="copyWrongWords">Sao chép và học lại</button>
+        <button id="copyAndRelearn">Sao chép và học lại</button>
       </div>
     </div>
   </div>
-
+  
   <footer>
-    © 2025 - Tiếng Nhật Online & Offline Quy Nhơn<br>
-    Địa chỉ: 22 Tô Hiến Thành, TP Quy Nhơn, Tỉnh Bình Định<br>
-    Zalo: 0762.75.66.79
+      <p>© 2025 - Tiếng Nhật Online & Offline Quy Nhơn</p>
+      <p>Địa chỉ: 22 Tô Hiến Thành, TP Quy Nhơn, Tỉnh Bình Định</p>
+      <p>Zalo: <a href="https://zalo.me/0762756679" target="_blank">0762.75.66.79</a></p>
   </footer>
-
-  <script>
-    // Basic JavaScript to handle tab switching (for demonstration)
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => {
-          t.classList.remove('active');
-          t.setAttribute('aria-selected', 'false');
-        });
-        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-        
-        tab.classList.add('active');
-        tab.setAttribute('aria-selected', 'true');
-        document.getElementById(tab.dataset.tab).classList.add('active');
-      });
-    });
-  </script>
+  
+  <script src="script.js"></script>
 </body>
 </html>
