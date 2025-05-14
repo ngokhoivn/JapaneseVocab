@@ -1,353 +1,472 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Học từ vựng tiếng Nhật</title>
-  <style>
-    :root {
-      --bg-dark: #121212;
-      --bg-card: #1e1e1e;
-      --text-light: #e0e0e0;
-      --text-muted: #a0a0a0;
-      --primary: #bb86fc;
-      --primary-dark: #9d4edd;
-      --accent: #03dac6;
-      --error: #cf6679;
-      --success: #4caf50;
+// Global variables
+let vocabulary = [];
+let currentIndex = 0;
+let wrongWords = [];
+let currentCycle = 1;
+let totalCycles = 2;
+let isChecking = false;
+const apiCache = {};
+// API keys declaration
+const apiKeys = [
+    'AIzaSyDjgTk4uZQUCpFH5Zt8ZgP2CW-jhmkLv8o',
+    'AIzaSyDaROReiR48rjfavf8Lk6XvphC6QxKPZo4',
+    'AIzaSyD-LQ7BMIl85o0Tq3LogG2rBmtYjkOpogU'
+];
+
+// Element references
+const tabs = document.querySelectorAll('.tab');
+const tabContents = document.querySelectorAll('.tab-content');
+const vocabularyInput = document.getElementById('vocabularyInput');
+const shuffleCheckbox = document.getElementById('shuffleCheckbox');
+const cycleCountInput = document.getElementById('cycleCount');
+const startLearningBtn = document.getElementById('startLearning');
+const kanjiDisplay = document.getElementById('kanjiDisplay');
+const answerInput = document.getElementById('answerInput');
+const checkAnswerBtn = document.getElementById('checkAnswer');
+const skipWordBtn = document.getElementById('skipWord');
+const resultDisplay = document.getElementById('result');
+const meaningDisplay = document.getElementById('meaning');
+const progressText = document.getElementById('progressText');
+const cycleText = document.getElementById('cycleText');
+const progressBarFill = document.querySelector('.progress-bar-fill');
+const restartLearningBtn = document.getElementById('restartLearning');
+const wrongWordsTextarea = document.getElementById('wrongWords');
+const copyAndRelearnBtn = document.getElementById('copyAndRelearn');
+
+// Save/load learning state from localStorage
+function saveState() {
+    const state = {
+        vocabulary,
+        currentIndex,
+        wrongWords,
+        currentCycle,
+        totalCycles,
+        inputText: vocabularyInput.value
+    };
+    localStorage.setItem('vocabularyLearnerState', JSON.stringify(state));
+}
+
+function loadState() {
+    const savedState = localStorage.getItem('vocabularyLearnerState');
+    if (savedState) {
+        try {
+            const state = JSON.parse(savedState);
+            vocabulary = state.vocabulary || [];
+            currentIndex = state.currentIndex || 0;
+            wrongWords = state.wrongWords || [];
+            currentCycle = state.currentCycle || 1;
+            totalCycles = state.totalCycles || 2;
+            
+            // Restore input text
+            if (state.inputText) {
+                vocabularyInput.value = state.inputText;
+            }
+            
+            return vocabulary.length > 0;
+        } catch (e) {
+            console.error("Error loading saved state:", e);
+            return false;
+        }
+    }
+    return false;
+}
+
+// Check for saved state on page load
+document.addEventListener('DOMContentLoaded', () => {
+    if (loadState() && confirm('Phát hiện dữ liệu học tập đã lưu. Bạn có muốn tiếp tục không?')) {
+        // Switch to learning tab
+        document.querySelector('[data-tab="learning"]').disabled = false;
+        document.querySelector('[data-tab="learning"]').click();
+
+        // Update UI
+        updateProgressUI();
+        showCurrentWord();
+
+        // Set focus to answer input
+        answerInput.focus();
+    }
+});
+
+// Tab switching
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        if (tab.disabled) return;
+
+        const tabId = tab.getAttribute('data-tab');
+
+        tabs.forEach(t => t.classList.remove('active'));
+        tabContents.forEach(tc => tc.classList.remove('active'));
+
+        tab.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+    });
+});
+
+// Start learning button
+startLearningBtn.addEventListener('click', () => {
+    const inputText = vocabularyInput.value.trim();
+    if (!inputText) {
+        alert('Vui lòng nhập danh sách từ vựng!');
+        return;
+    }
+
+    const lines = inputText.split('\n');
+    vocabulary = [];
+
+    for (const line of lines) {
+        if (!line.trim()) continue;
+
+        const parts = line.trim().split('=');
+        if (parts.length < 2) {
+            alert(`Định dạng không hợp lệ: ${line}\nVui lòng sử dụng định dạng: Kanji=Hiragana=Nghĩa`);
+            return;
+        }
+
+        vocabulary.push({
+            kanji: parts[0].trim(),
+            hiragana: parts[1].trim(),
+            meaning: parts.length > 2 ? parts[2].trim() : ''
+        });
+    }
+
+    if (vocabulary.length === 0) {
+        alert('Không có từ vựng nào được nhập!');
+        return;
+    }
+
+    // Get cycle count
+    totalCycles = parseInt(cycleCountInput.value) || 2;
+    if (totalCycles < 1) totalCycles = 1;
+
+    // Shuffle if needed
+    if (shuffleCheckbox.checked) {
+        shuffleArray(vocabulary);
+    }
+
+    // Reset learning state
+    currentIndex = 0;
+    currentCycle = 1;
+    wrongWords = [];
+    isChecking = false;
+
+    // Save state
+    saveState();
+
+    // Switch to learning tab
+    document.querySelector('[data-tab="learning"]').disabled = false;
+    document.querySelector('[data-tab="learning"]').click();
+
+    // Update UI
+    updateProgressUI();
+    showCurrentWord();
+
+    // Set focus to answer input
+    answerInput.focus();
+
+    // Enter fullscreen mode
+    document.documentElement.requestFullscreen().catch(err => {
+        console.log(`Error attempting to enable fullscreen mode: ${err.message}`);
+    });
+});
+
+// Check answer button
+checkAnswerBtn.addEventListener('click', checkAnswer);
+
+// Skip word button
+skipWordBtn.addEventListener('click', skipWord);
+
+// Restart learning button
+restartLearningBtn.addEventListener('click', () => {
+    currentIndex = 0;
+    currentCycle = 1;
+    wrongWords = [];
+    isChecking = false;
+
+    // Save state
+    saveState();
+
+    updateProgressUI();
+    showCurrentWord();
+    resultDisplay.classList.add('hidden');
+    meaningDisplay.textContent = '';
+    answerInput.value = '';
+    answerInput.focus();
+});
+
+// Copy and relearn button
+copyAndRelearnBtn.addEventListener('click', () => {
+    if (wrongWords.length === 0) return;
+
+    const wrongWordsText = wrongWords.map(word =>
+        `${word.kanji}=${word.hiragana}=${word.meaning}`
+    ).join('\n');
+
+    vocabularyInput.value = wrongWordsText;
+
+    // Switch to input tab
+    document.querySelector('[data-tab="input"]').click();
+
+    // Focus on start button
+    startLearningBtn.focus();
+});
+
+// Answer input enter key
+answerInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        checkAnswer();
+    }
+});
+
+// Global keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    // Only process when in learning mode
+    const learningTab = document.getElementById('learning');
+    if (!learningTab.classList.contains('active')) return;
+
+    if (e.key === 's' && e.ctrlKey) {
+        // Ctrl+S - Skip word
+        e.preventDefault();
+        skipWord();
+    } else if (e.key === 'Escape') {
+        // ESC - Show exit dialog
+        e.preventDefault();
+        if (confirm('Bạn có muốn thoát chế độ học không?')) {
+            document.querySelector('[data-tab="input"]').click();
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+        }
+    } else if (e.key === 'F11') {
+        // F11 - Toggle fullscreen
+        e.preventDefault();
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else {
+            document.documentElement.requestFullscreen();
+        }
+    }
+});
+
+// Function to check answer
+async function checkAnswer() {
+    if (isChecking || currentIndex >= vocabulary.length) return;
+
+    isChecking = true;
+    const currentWord = vocabulary[currentIndex];
+    const userAnswer = answerInput.value.trim();
+
+    // Add loading state
+    resultDisplay.textContent = "Đang kiểm tra...";
+    resultDisplay.className = "result";
+    resultDisplay.classList.remove("hidden");
+
+    // Call AI to check
+    const isCorrect = await checkWithAI(userAnswer, currentWord.hiragana);
+
+    if (isCorrect) {
+        resultDisplay.textContent = "✓ Chính xác!";
+        resultDisplay.className = "result correct";
+        
+        // Move to next word after success
+        setTimeout(() => {
+            moveToNextWord();
+            isChecking = false;
+        }, 1500);
+    } else {
+        resultDisplay.textContent = `✗ Sai rồi! Đáp án đúng là: ${currentWord.hiragana}`;
+        resultDisplay.className = "result incorrect";
+        
+        // For wrong answer, show the hint but don't automatically move on
+        if (!wrongWords.some(word => word.kanji === currentWord.kanji)) {
+            wrongWords.push(currentWord);
+        }
+        
+        // Show meaning regardless of correct/incorrect
+        if (currentWord.meaning) {
+            meaningDisplay.textContent = currentWord.meaning;
+        }
+        
+        // Allow user to try again
+        isChecking = false;
     }
     
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    // Save state after checking
+    saveState();
+}
+
+// Improved AI checking function with better handling of alternative inputs
+async function checkWithAI(userInput, correctHiragana) {
+    const cacheKey = `${userInput}:${correctHiragana}`;
+
+    // Check cache
+    if (apiCache[cacheKey] !== undefined) {
+        return apiCache[cacheKey];
     }
     
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-light);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      transition: all 0.3s ease;
+    // Handle romaji/latin alphabet input
+    let processedInput = userInput;
+    if (/^[a-zA-Z0-9\s,.?!;:'"()\-]+$/.test(userInput)) {
+        // If input is only Latin characters, consider it romaji
+        // This is just for checking - we'll still validate with AI
+        console.log("Latin alphabet input detected, treating as romaji");
+    }
+
+    const prompt = `
+Evaluate Japanese answer flexibility. Act as a Japanese language teacher evaluating student responses.
+
+Rules for evaluation:
+1. ACCEPT different ways of expressing the same meaning in Japanese
+2. ACCEPT both hiragana and katakana representations of the same sound
+3. ACCEPT romaji (Latin alphabet) input that correctly represents the Japanese sounds
+4. ACCEPT particle variations where appropriate (は/wa, へ/e, を/o)
+5. ACCEPT answers with different word order if grammatically correct
+6. For sentences, focus on meaning equivalence rather than exact character matching
+7. For vocabulary words, be stricter about pronunciation but accept alternative forms
+
+Compare:
+Student answer: ${processedInput}  
+Expected answer: ${correctHiragana}
+
+Considering all the above rules, is the student's answer correct? Output only 'true' or 'false'.
+`;
+
+    try {
+        // Use API key from array (can be rotated if needed)
+        const currentApiKey = apiKeys[0]; // Logic for rotating API keys could be added
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${currentApiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }]
+            })
+        });
+
+        const data = await response.json();
+
+        // Process result from API
+        if (data && data.candidates && data.candidates[0].content) {
+            const resultText = data.candidates[0].content.parts[0].text.trim().toLowerCase();
+            const isCorrect = resultText === "true";
+            apiCache[cacheKey] = isCorrect;
+            return isCorrect;
+        } else {
+            console.error("Invalid response from API:", data);
+            
+            // Fallback to direct comparison if API fails
+            const normalizedInput = processedInput.toLowerCase().replace(/\s+/g, '');
+            const normalizedCorrect = correctHiragana.toLowerCase().replace(/\s+/g, '');
+            return normalizedInput === normalizedCorrect;
+        }
+    } catch (error) {
+        console.error("Error calling Gemini API:", error);
+        
+        // Fallback to direct comparison if API fails
+        const normalizedInput = processedInput.toLowerCase().replace(/\s+/g, '');
+        const normalizedCorrect = correctHiragana.toLowerCase().replace(/\s+/g, '');
+        return normalizedInput === normalizedCorrect;
+    }
+}
+
+// Function to skip word
+function skipWord() {
+    if (isChecking) return;
+
+    const currentWord = vocabulary[currentIndex];
+
+    // Add to wrong words list
+    if (!wrongWords.some(word => word.kanji === currentWord.kanji)) {
+        wrongWords.push(currentWord);
+    }
+
+    moveToNextWord();
+    
+    // Save state after skipping
+    saveState();
+}
+
+// Function to move to next word
+function moveToNextWord() {
+    currentIndex++;
+
+    // Check if we need to move to next cycle or finish
+    if (currentIndex >= vocabulary.length) {
+        currentIndex = 0;
+        currentCycle++;
+
+        if (currentCycle > totalCycles) {
+            // Learning completed
+            finishLearning();
+            return;
+        }
+    }
+
+    // Reset UI for next word
+    resultDisplay.classList.add('hidden');
+    meaningDisplay.textContent = '';
+    answerInput.value = '';
+
+    // Update progress and show next word
+    updateProgressUI();
+    showCurrentWord();
+    answerInput.focus();
+    
+    // Save state after moving
+    saveState();
+}
+
+// Function to show current word
+function showCurrentWord() {
+    if (currentIndex < vocabulary.length) {
+        kanjiDisplay.textContent = vocabulary[currentIndex].kanji;
+    } else {
+        kanjiDisplay.textContent = '';
+    }
+}
+
+// Function to update progress UI
+function updateProgressUI() {
+    const total = vocabulary.length;
+    const current = currentIndex + 1;
+    const percentage = total > 0 ? (currentIndex / total) * 100 : 0;
+
+    progressText.textContent = `${current}/${total}`;
+    cycleText.textContent = `Chu kỳ: ${currentCycle}/${totalCycles}`;
+    progressBarFill.style.width = `${percentage}%`;
+}
+
+// Function to finish learning
+function finishLearning() {
+    if (wrongWords.length > 0) {
+        // Show wrong words tab
+        const wrongWordsTab = document.querySelector('[data-tab="wrong"]');
+        wrongWordsTab.disabled = false;
+        wrongWordsTab.click();
+
+        // Fill wrong words textarea
+        wrongWordsTextarea.value = wrongWords.map(word =>
+            `${word.kanji}=${word.hiragana}=${word.meaning}`
+        ).join('\n');
+    } else {
+        // No wrong words, show congratulations
+        alert('Chúc mừng! Bạn đã học tất cả từ vựng đúng!');
+        document.querySelector('[data-tab="input"]').click();
+    }
+
+    // Exit fullscreen
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
     }
     
-    .container {
-      width: 100%;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-      flex: 1;
+    // Clear saved state as we've completed
+    localStorage.removeItem('vocabularyLearnerState');
+}
+
+// Helper function to shuffle array
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
     }
-    
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: var(--primary);
-    }
-    
-    .tabs {
-      display: flex;
-      margin-bottom: 20px;
-      border-bottom: 1px solid var(--primary-dark);
-    }
-    
-    .tab {
-      padding: 10px 20px;
-      cursor: pointer;
-      background-color: var(--bg-card);
-      color: var(--text-light);
-      border: none;
-      transition: all 0.3s ease;
-    }
-    
-    .tab.active {
-      background-color: var(--primary-dark);
-      color: white;
-    }
-    
-    .tab-content {
-      background-color: var(--bg-card);
-      padding: 20px;
-      border-radius: 0 0 4px 4px;
-      display: none;
-    }
-    
-    .tab-content.active {
-      display: block;
-    }
-    
-    textarea, input[type="text"], input[type="number"] {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 15px;
-      background-color: #2d2d2d;
-      border: 1px solid #444;
-      color: var(--text-light);
-      border-radius: 4px;
-      font-size: 16px;
-    }
-    
-    textarea {
-      min-height: 200px;
-      resize: vertical;
-    }
-    
-    .checkbox-container {
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-    }
-    
-    .checkbox-container input {
-      margin-right: 10px;
-    }
-    
-    button {
-      background-color: var(--primary);
-      color: black;
-      border: none;
-      padding: 12px 20px;
-      cursor: pointer;
-      border-radius: 4px;
-      font-size: 16px;
-      font-weight: bold;
-      margin-right: 10px;
-      transition: all 0.2s ease;
-    }
-    
-    button:hover {
-      background-color: var(--primary-dark);
-      color: white;
-    }
-    
-    button:disabled {
-      background-color: #555;
-      cursor: not-allowed;
-    }
-    
-    .input-group {
-      margin-bottom: 15px;
-    }
-    
-    .input-group label {
-      display: block;
-      margin-bottom: 5px;
-      color: var(--text-light);
-    }
-    
-    .progress-container {
-      margin-bottom: 20px;
-    }
-    
-    .progress-info {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 5px;
-    }
-    
-    .progress-bar {
-      height: 8px;
-      background-color: #444;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    
-    .progress-bar-fill {
-      height: 100%;
-      background-color: var(--primary);
-      transition: width 0.3s ease;
-    }
-    
-    .kanji-display {
-      font-size: 72px;
-      text-align: center;
-      margin: 30px 0;
-      min-height: 100px;
-    }
-    
-    .result {
-      margin: 15px 0;
-      padding: 10px;
-      border-radius: 4px;
-      text-align: center;
-      font-size: 18px;
-      font-weight: bold;
-    }
-    
-    .result.correct {
-      background-color: rgba(76, 175, 80, 0.2);
-      color: var(--success);
-    }
-    
-    .result.incorrect {
-      background-color: rgba(207, 102, 121, 0.2);
-      color: var(--error);
-    }
-    
-    .meaning {
-      margin: 15px 0;
-      text-align: center;
-      font-size: 24px;
-      min-height: 36px;
-    }
-    
-    .button-container {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-    }
-    
-    .hidden {
-      display: none;
-    }
-    
-    footer {
-      text-align: center;
-      padding: 20px;
-      color: var(--text-muted);
-      font-size: 14px;
-    }
-    
-    .shortcuts {
-      margin-top: 20px;
-      padding: 10px;
-      background-color: #2d2d2d;
-      border-radius: 4px;
-    }
-    
-    .shortcuts h3 {
-      margin-bottom: 10px;
-      color: var(--accent);
-    }
-    
-    .shortcuts-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-    
-    .shortcut {
-      display: flex;
-      justify-content: space-between;
-    }
-    
-    .shortcut-key {
-      background-color: #444;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-family: monospace;
-    }
-    
-    #wordList .wrong-word {
-      padding: 5px 0;
-      border-bottom: 1px solid #444;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Học từ vựng tiếng Nhật</h1>
-    
-    <div class="tabs">
-      <button class="tab active" data-tab="input">Nhập từ vựng</button>
-      <button class="tab" data-tab="learning" disabled>Học từ vựng</button>
-      <button class="tab" data-tab="wrong" disabled>Danh sách từ sai</button>
-    </div>
-    
-    <!-- Tab Nhập từ vựng -->
-    <div class="tab-content active" id="input">
-      <div class="input-group">
-        <label for="vocabularyInput">Nhập danh sách từ vựng (định dạng: Kanji=Hiragana=Nghĩa tiếng Việt)</label>
-        <textarea id="vocabularyInput" placeholder="赤い=あかい=đỏ&#10;青い=あおい=xanh lam&#10;白い=しろい=trắng"></textarea>
-      </div>
-      
-      <div class="checkbox-container">
-        <input type="checkbox" id="shuffleCheckbox">
-        <label for="shuffleCheckbox">Đảo thứ tự từ vựng</label>
-      </div>
-      
-      <div class="input-group">
-        <label for="cycleCount">Số chu kỳ lặp lại</label>
-        <input type="number" id="cycleCount" value="2" min="1" max="10">
-      </div>
-      
-      <div class="button-container">
-        <button id="startLearning">Bắt đầu học</button>
-      </div>
-      
-      <div class="shortcuts">
-        <h3>Phím tắt</h3>
-        <div class="shortcuts-grid">
-          <div class="shortcut">
-            <span>Kiểm tra câu trả lời</span>
-            <span class="shortcut-key">Enter</span>
-          </div>
-          <div class="shortcut">
-            <span>Bỏ qua từ hiện tại</span>
-            <span class="shortcut-key">Ctrl + S</span>
-          </div>
-          <div class="shortcut">
-            <span>Hiện hộp thoại thoát/ẩn</span>
-            <span class="shortcut-key">ESC</span>
-          </div>
-          <div class="shortcut">
-            <span>Bật/tắt toàn màn hình</span>
-            <span class="shortcut-key">F11</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Tab Học từ vựng -->
-    <div class="tab-content" id="learning">
-      <div class="progress-container">
-        <div class="progress-info">
-          <span id="progressText">0/0</span>
-          <span id="cycleText">Chu kỳ: 1/2</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-bar-fill" style="width: 0%"></div>
-        </div>
-      </div>
-      
-      <div class="kanji-display" id="kanjiDisplay"></div>
-      
-      <div class="input-group">
-        <label for="answerInput">Nhập Hiragana:</label>
-        <input type="text" id="answerInput" placeholder="Nhập phiên âm Hiragana">
-      </div>
-      
-      <div class="button-container">
-        <button id="checkAnswer">Kiểm tra (Enter)</button>
-        <button id="skipWord">Bỏ từ này (Ctrl+S)</button>
-      </div>
-      
-      <div class="result hidden" id="result"></div>
-      
-      <div class="meaning" id="meaning"></div>
-      
-      <div class="button-container">
-        <button id="restartLearning">Học lại từ đầu</button>
-      </div>
-    </div>
-    
-    <!-- Tab Danh sách từ sai -->
-    <div class="tab-content" id="wrong">
-      <h2>Danh sách từ vựng sai</h2>
-      <textarea id="wrongWords" readonly></textarea>
-      
-      <div class="button-container">
-        <button id="copyAndRelearn">Sao chép và học lại</button>
-      </div>
-    </div>
-  </div>
-  
-  <footer>
-    <p>© 2025 - Tiếng Nhật Online & Offline Quy Nhơn</p>
-  </footer>
-  
-  <script src="script.js"></script>
-</body>
-</html>
+}
