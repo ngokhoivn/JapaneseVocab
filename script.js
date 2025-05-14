@@ -1,4 +1,4 @@
-﻿// Global variables
+// Global variables
 let vocabulary = [];
 let currentIndex = 0;
 let wrongWords = [];
@@ -260,7 +260,7 @@ Output only 'true' or 'false'.
     try {
         // Sử dụng API key từ mảng (thay đổi khi cần)
         const currentApiKey = apiKeys[0]; // Có thể thêm logic để luân phiên sử dụng các API keys
-
+        
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${currentApiKey}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -270,7 +270,7 @@ Output only 'true' or 'false'.
         });
 
         const data = await response.json();
-
+        
         // Xử lý kết quả trả về từ API
         if (data && data.candidates && data.candidates[0].content) {
             const resultText = data.candidates[0].content.parts[0].text.trim().toLowerCase();
