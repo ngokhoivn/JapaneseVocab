@@ -6,7 +6,7 @@ let currentCycle = 1;
 let totalCycles = 2;
 let isChecking = false;
 const apiCache = {};
-// Khai báo API keys
+// API keys declaration
 const apiKeys = [
     'AIzaSyDjgTk4uZQUCpFH5Zt8ZgP2CW-jhmkLv8o',
     'AIzaSyDaROReiR48rjfavf8Lk6XvphC6QxKPZo4',
@@ -32,6 +32,60 @@ const progressBarFill = document.querySelector('.progress-bar-fill');
 const restartLearningBtn = document.getElementById('restartLearning');
 const wrongWordsTextarea = document.getElementById('wrongWords');
 const copyAndRelearnBtn = document.getElementById('copyAndRelearn');
+
+// Save/load learning state from localStorage
+function saveState() {
+    const state = {
+        vocabulary,
+        currentIndex,
+        wrongWords,
+        currentCycle,
+        totalCycles,
+        inputText: vocabularyInput.value
+    };
+    localStorage.setItem('vocabularyLearnerState', JSON.stringify(state));
+}
+
+function loadState() {
+    const savedState = localStorage.getItem('vocabularyLearnerState');
+    if (savedState) {
+        try {
+            const state = JSON.parse(savedState);
+            vocabulary = state.vocabulary || [];
+            currentIndex = state.currentIndex || 0;
+            wrongWords = state.wrongWords || [];
+            currentCycle = state.currentCycle || 1;
+            totalCycles = state.totalCycles || 2;
+            
+            // Restore input text
+            if (state.inputText) {
+                vocabularyInput.value = state.inputText;
+            }
+            
+            return vocabulary.length > 0;
+        } catch (e) {
+            console.error("Error loading saved state:", e);
+            return false;
+        }
+    }
+    return false;
+}
+
+// Check for saved state on page load
+document.addEventListener('DOMContentLoaded', () => {
+    if (loadState() && confirm('Phát hiện dữ liệu học tập đã lưu. Bạn có muốn tiếp tục không?')) {
+        // Switch to learning tab
+        document.querySelector('[data-tab="learning"]').disabled = false;
+        document.querySelector('[data-tab="learning"]').click();
+
+        // Update UI
+        updateProgressUI();
+        showCurrentWord();
+
+        // Set focus to answer input
+        answerInput.focus();
+    }
+});
 
 // Tab switching
 tabs.forEach(tab => {
@@ -95,6 +149,9 @@ startLearningBtn.addEventListener('click', () => {
     wrongWords = [];
     isChecking = false;
 
+    // Save state
+    saveState();
+
     // Switch to learning tab
     document.querySelector('[data-tab="learning"]').disabled = false;
     document.querySelector('[data-tab="learning"]').click();
@@ -124,6 +181,9 @@ restartLearningBtn.addEventListener('click', () => {
     currentCycle = 1;
     wrongWords = [];
     isChecking = false;
+
+    // Save state
+    saveState();
 
     updateProgressUI();
     showCurrentWord();
@@ -196,71 +256,85 @@ async function checkAnswer() {
     const currentWord = vocabulary[currentIndex];
     const userAnswer = answerInput.value.trim();
 
-    // Thêm loading state
+    // Add loading state
     resultDisplay.textContent = "Đang kiểm tra...";
     resultDisplay.className = "result";
     resultDisplay.classList.remove("hidden");
 
-    // Gọi AI để kiểm tra
+    // Call AI to check
     const isCorrect = await checkWithAI(userAnswer, currentWord.hiragana);
 
     if (isCorrect) {
         resultDisplay.textContent = "✓ Chính xác!";
         resultDisplay.className = "result correct";
+        
+        // Move to next word after success
+        setTimeout(() => {
+            moveToNextWord();
+            isChecking = false;
+        }, 1500);
     } else {
         resultDisplay.textContent = `✗ Sai rồi! Đáp án đúng là: ${currentWord.hiragana}`;
         resultDisplay.className = "result incorrect";
+        
+        // For wrong answer, show the hint but don't automatically move on
         if (!wrongWords.some(word => word.kanji === currentWord.kanji)) {
             wrongWords.push(currentWord);
         }
-    }
-
-    // Hiển thị nghĩa
-    if (currentWord.meaning) {
-        meaningDisplay.textContent = currentWord.meaning;
-    }
-
-    // Chuyển từ sau 1.5 giây
-    setTimeout(() => {
-        moveToNextWord();
+        
+        // Show meaning regardless of correct/incorrect
+        if (currentWord.meaning) {
+            meaningDisplay.textContent = currentWord.meaning;
+        }
+        
+        // Allow user to try again
         isChecking = false;
-    }, 1500);
+    }
+    
+    // Save state after checking
+    saveState();
 }
 
-// Hàm kiểm tra với AI được hợp nhất và cải tiến
+// Improved AI checking function with better handling of alternative inputs
 async function checkWithAI(userInput, correctHiragana) {
     const cacheKey = `${userInput}:${correctHiragana}`;
 
-    // Kiểm tra cache
+    // Check cache
     if (apiCache[cacheKey] !== undefined) {
         return apiCache[cacheKey];
     }
+    
+    // Handle romaji/latin alphabet input
+    let processedInput = userInput;
+    if (/^[a-zA-Z0-9\s,.?!;:'"()\-]+$/.test(userInput)) {
+        // If input is only Latin characters, consider it romaji
+        // This is just for checking - we'll still validate with AI
+        console.log("Latin alphabet input detected, treating as romaji");
+    }
 
     const prompt = `
-Evaluate purely by **spoken phonetics** in Japanese. Do not evaluate grammar or word order, only the correct pronunciation of the **entire sentence**. 
+Evaluate Japanese answer flexibility. Act as a Japanese language teacher evaluating student responses.
 
-Rules:
-1. If the input contains any kanji (漢字), return FALSE.
-2. Convert both input and correct to their phonetic pronunciation (as if spoken), including all particles and conjugation.
-3. Compare their syllables and morae strictly:
-    - Must match exactly in sound.
-    - Do NOT allow any reading variation (e.g., あき vs あけ → FALSE).
-4. Accept minor character differences ONLY IF they do NOT change pronunciation:
-    - は vs わ as particle = OK
-    - Hiragana vs Katakana = OK IF sound matches and used only once
-    - Dakuten mismatch (ば vs は) = OK ONLY IF sound is contextually identical
+Rules for evaluation:
+1. ACCEPT different ways of expressing the same meaning in Japanese
+2. ACCEPT both hiragana and katakana representations of the same sound
+3. ACCEPT romaji (Latin alphabet) input that correctly represents the Japanese sounds
+4. ACCEPT particle variations where appropriate (は/wa, へ/e, を/o)
+5. ACCEPT answers with different word order if grammatically correct
+6. For sentences, focus on meaning equivalence rather than exact character matching
+7. For vocabulary words, be stricter about pronunciation but accept alternative forms
 
-Compare these:
-Input: ${userInput}  
-Correct: ${correctHiragana}
+Compare:
+Student answer: ${processedInput}  
+Expected answer: ${correctHiragana}
 
-Output only 'true' or 'false'.
+Considering all the above rules, is the student's answer correct? Output only 'true' or 'false'.
 `;
 
     try {
-        // Sử dụng API key từ mảng (thay đổi khi cần)
-        const currentApiKey = apiKeys[0]; // Có thể thêm logic để luân phiên sử dụng các API keys
-        
+        // Use API key from array (can be rotated if needed)
+        const currentApiKey = apiKeys[0]; // Logic for rotating API keys could be added
+
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${currentApiKey}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -270,20 +344,28 @@ Output only 'true' or 'false'.
         });
 
         const data = await response.json();
-        
-        // Xử lý kết quả trả về từ API
+
+        // Process result from API
         if (data && data.candidates && data.candidates[0].content) {
             const resultText = data.candidates[0].content.parts[0].text.trim().toLowerCase();
             const isCorrect = resultText === "true";
             apiCache[cacheKey] = isCorrect;
             return isCorrect;
         } else {
-            console.error("Không nhận được phản hồi hợp lệ từ API:", data);
-            return false;
+            console.error("Invalid response from API:", data);
+            
+            // Fallback to direct comparison if API fails
+            const normalizedInput = processedInput.toLowerCase().replace(/\s+/g, '');
+            const normalizedCorrect = correctHiragana.toLowerCase().replace(/\s+/g, '');
+            return normalizedInput === normalizedCorrect;
         }
     } catch (error) {
-        console.error("Lỗi khi gọi Gemini API:", error);
-        return false;
+        console.error("Error calling Gemini API:", error);
+        
+        // Fallback to direct comparison if API fails
+        const normalizedInput = processedInput.toLowerCase().replace(/\s+/g, '');
+        const normalizedCorrect = correctHiragana.toLowerCase().replace(/\s+/g, '');
+        return normalizedInput === normalizedCorrect;
     }
 }
 
@@ -299,6 +381,9 @@ function skipWord() {
     }
 
     moveToNextWord();
+    
+    // Save state after skipping
+    saveState();
 }
 
 // Function to move to next word
@@ -326,6 +411,9 @@ function moveToNextWord() {
     updateProgressUI();
     showCurrentWord();
     answerInput.focus();
+    
+    // Save state after moving
+    saveState();
 }
 
 // Function to show current word
@@ -370,6 +458,9 @@ function finishLearning() {
     if (document.fullscreenElement) {
         document.exitFullscreen();
     }
+    
+    // Clear saved state as we've completed
+    localStorage.removeItem('vocabularyLearnerState');
 }
 
 // Helper function to shuffle array
