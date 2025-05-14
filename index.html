@@ -31,6 +31,13 @@
             display: flex;
             flex-direction: column;
             line-height: 1.5;
+            padding-bottom: 120px; /* Space for virtual keyboard */
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding-bottom: 150px; /* Extra space for mobile keyboards */
+            }
         }
 
         .container {
@@ -116,13 +123,15 @@
             background-color: var(--primary);
             color: black;
             border: none;
-            padding: 12px 20px;
+            padding: 10px 16px;
             cursor: pointer;
             border-radius: 4px;
-            font-size: clamp(14px, 4vw, 16px);
+            font-size: clamp(14px, 3.5vw, 16px);
             font-weight: 600;
             transition: background-color 0.2s ease;
-            touch-action: manipulation; /* Improve touch responsiveness */
+            touch-action: manipulation;
+            min-height: 40px;
+            min-width: 100px;
         }
 
             button:hover {
@@ -133,6 +142,18 @@
             button:disabled {
                 background-color: #555;
                 cursor: not-allowed;
+            }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+            .button-container button {
+                flex: 0 0 auto;
             }
 
         .input-group {
@@ -177,6 +198,8 @@
             min-height: 64px;
             word-break: break-word;
             overflow-wrap: break-word;
+            overflow-x: auto;
+            white-space: nowrap;
         }
 
         .result {
@@ -201,27 +224,16 @@
         .meaning {
             margin: 12px 0;
             text-align: center;
-            font-size: clamp(16px, 5vw, 18px); /* Tăng kích thước font cho nghĩa tiếng Việt */
+            font-size: clamp(16px, 5vw, 18px);
             word-break: break-word;
             overflow-wrap: break-word;
             line-height: 1.5;
             padding: 8px;
             background-color: rgba(45, 45, 45, 0.6);
             border-radius: 4px;
+            max-height: 120px;
+            overflow-y: auto;
         }
-
-        .button-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 16px;
-            flex-wrap: wrap;
-            gap: 12px; /* Tăng khoảng cách giữa các nút */
-        }
-
-            .button-container button {
-                flex: 1 0 120px;
-                padding: 12px;
-            }
 
         .hidden {
             display: none;
@@ -267,10 +279,12 @@
         }
 
         #wordList .wrong-word {
-            padding: 8px; /* Tăng padding */
+            padding: 8px;
             border-bottom: 1px solid #444;
-            font-size: clamp(14px, 3.5vw, 16px); /* Tăng kích thước font */
+            font-size: clamp(14px, 3.5vw, 16px);
             line-height: 1.5;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         @media (max-width: 600px) {
@@ -279,52 +293,82 @@
             }
 
             .tab {
-                padding: 10px; /* Tăng kích thước để dễ nhấn trên mobile */
+                padding: 10px;
+            }
+
+            button {
+                padding: 8px 14px;
+                font-size: clamp(13px, 3.5vw, 15px);
+                min-height: 36px;
+                min-width: 90px;
             }
 
             .button-container {
-                flex-direction: column;
+                gap: 6px;
+                flex-direction: row;
             }
-
-                .button-container button {
-                    width: 100%;
-                    padding: 14px; /* Tăng kích thước để dễ nhấn */
-                    margin: 4px 0;
-                    font-size: 16px; /* Đảm bảo text đủ lớn để đọc */
-                }
 
             .shortcuts-grid {
                 grid-template-columns: 1fr;
             }
 
             .meaning {
-                font-size: 16px; /* Đảm bảo kích thước tối thiểu */
+                font-size: 16px;
                 padding: 10px;
                 margin: 16px 0;
-                background-color: rgba(45, 45, 45, 0.8); /* Tăng độ tương phản */
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                background-color: rgba(45, 45, 45, 0.8);
+                max-height: 100px;
             }
 
             .kanji-display {
-                font-size: 38px; /* Đảm bảo kích thước tối thiểu */
+                font-size: clamp(28px, 10vw, 38px);
                 margin: 20px 0;
+                white-space: normal;
+                overflow-x: hidden;
+                hyphens: auto;
             }
 
             textarea, input[type="text"], input[type="number"] {
                 padding: 12px;
-                font-size: 16px; /* Đảm bảo text đủ lớn để đọc và nhập */
+                font-size: 16px;
             }
 
-            /* Thêm khoảng trống giữa các phần */
             .input-group {
                 margin-bottom: 16px;
             }
 
-            /* Hiển thị rõ ràng hơn cho kết quả */
             .result {
                 padding: 12px;
                 margin: 16px 0;
                 font-size: 16px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .container {
+                padding: 8px;
+            }
+
+            .kanji-display {
+                font-size: clamp(24px, 8vw, 32px);
+                min-height: 48px;
+            }
+
+            .meaning {
+                font-size: 14px;
+                padding: 8px;
+            }
+
+            button {
+                padding: 8px 12px;
+                font-size: clamp(12px, 3vw, 14px);
+                min-height: 34px;
+                min-width: 80px;
+            }
+
+            textarea, input[type="text"], input[type="number"] {
+                padding: 10px;
+                font-size: 14px;
             }
         }
     </style>
