@@ -44,6 +44,7 @@ function saveState() {
         inputText: vocabularyInput.value
     };
     localStorage.setItem('vocabularyLearnerState', JSON.stringify(state));
+    console.log("State saved successfully:", state);
 }
 
 function loadState() {
@@ -62,6 +63,7 @@ function loadState() {
                 vocabularyInput.value = state.inputText;
             }
             
+            console.log("State loaded successfully:", state);
             return vocabulary.length > 0;
         } catch (e) {
             console.error("Error loading saved state:", e);
@@ -72,18 +74,25 @@ function loadState() {
 }
 
 // Check for saved state on page load
-document.addEventListener('DOMContentLoaded', () => {
-    if (loadState() && confirm('Phát hiện dữ liệu học tập đã lưu. Bạn có muốn tiếp tục không?')) {
-        // Switch to learning tab
-        document.querySelector('[data-tab="learning"]').disabled = false;
-        document.querySelector('[data-tab="learning"]').click();
-
-        // Update UI
+window.addEventListener('load', () => {
+    if (loadState()) {
+        console.log("Found saved learning state");
+        
+        // Make sure UI is updated
         updateProgressUI();
         showCurrentWord();
-
-        // Set focus to answer input
-        answerInput.focus();
+        
+        // Offer to continue from saved state
+        if (confirm('Phát hiện dữ liệu học tập đã lưu. Bạn có muốn tiếp tục không?')) {
+            // Enable learning tab
+            document.querySelector('[data-tab="learning"]').disabled = false;
+            document.querySelector('[data-tab="learning"]').click();
+            
+            // Set focus to answer input
+            answerInput.focus();
+        }
+    } else {
+        console.log("No saved learning state found");
     }
 });
 
@@ -268,6 +277,11 @@ async function checkAnswer() {
         resultDisplay.textContent = "✓ Chính xác!";
         resultDisplay.className = "result correct";
         
+        // Show meaning for correct answer too
+        if (currentWord.meaning) {
+            meaningDisplay.textContent = currentWord.meaning;
+        }
+        
         // Move to next word after success
         setTimeout(() => {
             moveToNextWord();
@@ -277,17 +291,22 @@ async function checkAnswer() {
         resultDisplay.textContent = `✗ Sai rồi! Đáp án đúng là: ${currentWord.hiragana}`;
         resultDisplay.className = "result incorrect";
         
-        // For wrong answer, show the hint but don't automatically move on
+        // Add to wrong words list
         if (!wrongWords.some(word => word.kanji === currentWord.kanji)) {
             wrongWords.push(currentWord);
         }
         
-        // Show meaning regardless of correct/incorrect
+        // Always show meaning for incorrect answers
         if (currentWord.meaning) {
             meaningDisplay.textContent = currentWord.meaning;
         }
         
-        // Allow user to try again
+        // Clear the answer input to allow the user to try again
+        // but keep the hints visible
+        answerInput.value = '';
+        answerInput.focus();
+        
+        // Release the checking lock but keep displays visible
         isChecking = false;
     }
     
