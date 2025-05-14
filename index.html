@@ -1,355 +1,439 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Học từ vựng tiếng Nhật</title>
-  <style>
-    :root {
-      --bg-dark: #121212;
-      --bg-card: #1e1e1e;
-      --text-light: #e0e0e0;
-      --text-muted: #a0a0a0;
-      --primary: #bb86fc;
-      --primary-dark: #9d4edd;
-      --accent: #03dac6;
-      --error: #cf6679;
-      --success: #4caf50;
-    }
-    
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-light);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      transition: all 0.3s ease;
-    }
-    
-    .container {
-      width: 100%;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-      flex: 1;
-    }
-    
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: var(--primary);
-    }
-    
-    .tabs {
-      display: flex;
-      margin-bottom: 20px;
-      border-bottom: 1px solid var(--primary-dark);
-    }
-    
-    .tab {
-      padding: 10px 20px;
-      cursor: pointer;
-      background-color: var(--bg-card);
-      color: var(--text-light);
-      border: none;
-      transition: all 0.3s ease;
-    }
-    
-    .tab.active {
-      background-color: var(--primary-dark);
-      color: white;
-    }
-    
-    .tab-content {
-      background-color: var(--bg-card);
-      padding: 20px;
-      border-radius: 0 0 4px 4px;
-      display: none;
-    }
-    
-    .tab-content.active {
-      display: block;
-    }
-    
-    textarea, input[type="text"], input[type="number"] {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 15px;
-      background-color: #2d2d2d;
-      border: 1px solid #444;
-      color: var(--text-light);
-      border-radius: 4px;
-      font-size: 16px;
-    }
-    
-    textarea {
-      min-height: 200px;
-      resize: vertical;
-    }
-    
-    .checkbox-container {
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-    }
-    
-    .checkbox-container input {
-      margin-right: 10px;
-    }
-    
-    button {
-      background-color: var(--primary);
-      color: black;
-      border: none;
-      padding: 12px 20px;
-      cursor: pointer;
-      border-radius: 4px;
-      font-size: 16px;
-      font-weight: bold;
-      margin-right: 10px;
-      transition: all 0.2s ease;
-    }
-    
-    button:hover {
-      background-color: var(--primary-dark);
-      color: white;
-    }
-    
-    button:disabled {
-      background-color: #555;
-      cursor: not-allowed;
-    }
-    
-    .input-group {
-      margin-bottom: 15px;
-    }
-    
-    .input-group label {
-      display: block;
-      margin-bottom: 5px;
-      color: var(--text-light);
-    }
-    
-    .progress-container {
-      margin-bottom: 20px;
-    }
-    
-    .progress-info {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 5px;
-    }
-    
-    .progress-bar {
-      height: 8px;
-      background-color: #444;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    
-    .progress-bar-fill {
-      height: 100%;
-      background-color: var(--primary);
-      transition: width 0.3s ease;
-    }
-    
-    .kanji-display {
-      font-size: 42px;
-      text-align: center;
-      margin: 30px 0;
-      min-height: 100px;
-    }
-    
-    .result {
-      margin: 15px 0;
-      padding: 10px;
-      border-radius: 4px;
-      text-align: center;
-      font-size: 18px;
-      font-weight: bold;
-    }
-    
-    .result.correct {
-      background-color: rgba(76, 175, 80, 0.2);
-      color: var(--success);
-    }
-    
-    .result.incorrect {
-      background-color: rgba(207, 102, 121, 0.2);
-      color: var(--error);
-    }
-    
-    .meaning {
-      margin: 15px 0;
-      text-align: center;
-      font-size: 24px;
-      min-height: 36px;
-    }
-    
-    .button-container {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-    }
-    
-    .hidden {
-      display: none;
-    }
-    
-    footer {
-      text-align: center;
-      padding: 20px;
-      color: var(--text-muted);
-      font-size: 14px;
-    }
-    
-    .shortcuts {
-      margin-top: 20px;
-      padding: 10px;
-      background-color: #2d2d2d;
-      border-radius: 4px;
-    }
-    
-    .shortcuts h3 {
-      margin-bottom: 10px;
-      color: var(--accent);
-    }
-    
-    .shortcuts-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-    
-    .shortcut {
-      display: flex;
-      justify-content: space-between;
-    }
-    
-    .shortcut-key {
-      background-color: #444;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-family: monospace;
-    }
-    
-    #wordList .wrong-word {
-      padding: 5px 0;
-      border-bottom: 1px solid #444;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Học từ vựng tiếng Nhật</title>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1e1e1e;
+            --text-light: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --primary: #bb86fc;
+            --primary-dark: #9d4edd;
+            --accent: #03dac6;
+            --error: #cf6679;
+            --success: #4caf50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+            flex: 1;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 16px;
+            color: var(--primary);
+            font-size: clamp(1.5rem, 5vw, 2rem);
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--primary-dark);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            border: none;
+            transition: background-color 0.2s ease;
+            flex: 1;
+            text-align: center;
+            font-size: clamp(14px, 4vw, 16px);
+        }
+
+            .tab.active {
+                background-color: var(--primary-dark);
+                color: white;
+            }
+
+        .tab-content {
+            background-color: var(--bg-card);
+            padding: 16px;
+            border-radius: 4px;
+            display: none;
+        }
+
+            .tab-content.active {
+                display: block;
+            }
+
+        textarea, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            color: var(--text-light);
+            border-radius: 4px;
+            font-size: clamp(14px, 4vw, 16px);
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .checkbox-container {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+            .checkbox-container input {
+                margin-right: 8px;
+                width: 18px;
+                height: 18px;
+            }
+
+        button {
+            background-color: var(--primary);
+            color: black;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: clamp(14px, 4vw, 16px);
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+            touch-action: manipulation; /* Improve touch responsiveness */
+        }
+
+            button:hover {
+                background-color: var(--primary-dark);
+                color: white;
+            }
+
+            button:disabled {
+                background-color: #555;
+                cursor: not-allowed;
+            }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+            .input-group label {
+                display: block;
+                margin-bottom: 4px;
+                color: var(--text-light);
+                font-size: clamp(14px, 4vw, 16px);
+            }
+
+        .progress-container {
+            margin-bottom: 16px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: clamp(14px, 4vw, 16px);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: #444;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .kanji-display {
+            font-size: clamp(32px, 12vw, 64px);
+            text-align: center;
+            margin: 16px 0;
+            min-height: 64px;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .result {
+            margin: 12px 0;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+            font-size: clamp(14px, 4vw, 16px);
+            font-weight: 600;
+        }
+
+            .result.correct {
+                background-color: rgba(76, 175, 80, 0.2);
+                color: var(--success);
+            }
+
+            .result.incorrect {
+                background-color: rgba(207, 102, 121, 0.2);
+                color: var(--error);
+            }
+
+        .meaning {
+            margin: 12px 0;
+            text-align: center;
+            font-size: clamp(16px, 5vw, 18px); /* Tăng kích thước font cho nghĩa tiếng Việt */
+            word-break: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.5;
+            padding: 8px;
+            background-color: rgba(45, 45, 45, 0.6);
+            border-radius: 4px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            gap: 12px; /* Tăng khoảng cách giữa các nút */
+        }
+
+            .button-container button {
+                flex: 1 0 120px;
+                padding: 12px;
+            }
+
+        .hidden {
+            display: none;
+        }
+
+        footer {
+            text-align: center;
+            padding: 16px;
+            color: var(--text-muted);
+            font-size: clamp(12px, 3vw, 14px);
+        }
+
+        .shortcuts {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #2d2d2d;
+            border-radius: 4px;
+        }
+
+            .shortcuts h3 {
+                margin-bottom: 8px;
+                color: var(--accent);
+                font-size: clamp(14px, 4vw, 16px);
+            }
+
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 8px;
+        }
+
+        .shortcut {
+            display: flex;
+            justify-content: space-between;
+            font-size: clamp(12px, 3vw, 14px);
+        }
+
+        .shortcut-key {
+            background-color: #444;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        #wordList .wrong-word {
+            padding: 8px; /* Tăng padding */
+            border-bottom: 1px solid #444;
+            font-size: clamp(14px, 3.5vw, 16px); /* Tăng kích thước font */
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 12px;
+            }
+
+            .tab {
+                padding: 10px; /* Tăng kích thước để dễ nhấn trên mobile */
+            }
+
+            .button-container {
+                flex-direction: column;
+            }
+
+                .button-container button {
+                    width: 100%;
+                    padding: 14px; /* Tăng kích thước để dễ nhấn */
+                    margin: 4px 0;
+                    font-size: 16px; /* Đảm bảo text đủ lớn để đọc */
+                }
+
+            .shortcuts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .meaning {
+                font-size: 16px; /* Đảm bảo kích thước tối thiểu */
+                padding: 10px;
+                margin: 16px 0;
+                background-color: rgba(45, 45, 45, 0.8); /* Tăng độ tương phản */
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+
+            .kanji-display {
+                font-size: 38px; /* Đảm bảo kích thước tối thiểu */
+                margin: 20px 0;
+            }
+
+            textarea, input[type="text"], input[type="number"] {
+                padding: 12px;
+                font-size: 16px; /* Đảm bảo text đủ lớn để đọc và nhập */
+            }
+
+            /* Thêm khoảng trống giữa các phần */
+            .input-group {
+                margin-bottom: 16px;
+            }
+
+            /* Hiển thị rõ ràng hơn cho kết quả */
+            .result {
+                padding: 12px;
+                margin: 16px 0;
+                font-size: 16px;
+            }
+        }
+    </style>
+
 </head>
 <body>
-  <div class="container">
-    <h1>Học từ vựng tiếng Nhật</h1>
-    
-    <div class="tabs">
-      <button class="tab active" data-tab="input">Nhập từ vựng</button>
-      <button class="tab" data-tab="learning" disabled>Học từ vựng</button>
-      <button class="tab" data-tab="wrong" disabled>Danh sách từ sai</button>
-    </div>
-    
-    <!-- Tab Nhập từ vựng -->
-    <div class="tab-content active" id="input">
-      <div class="input-group">
-        <label for="vocabularyInput">Nhập danh sách từ vựng (định dạng: Kanji=Hiragana=Nghĩa tiếng Việt)</label>
-        <textarea id="vocabularyInput" placeholder="赤い=あかい=đỏ&#10;青い=あおい=xanh lam&#10;白い=しろい=trắng"></textarea>
-      </div>
-      
-      <div class="checkbox-container">
-        <input type="checkbox" id="shuffleCheckbox">
-        <label for="shuffleCheckbox">Đảo thứ tự từ vựng</label>
-      </div>
-      
-      <div class="input-group">
-        <label for="cycleCount">Số chu kỳ lặp lại</label>
-        <input type="number" id="cycleCount" value="2" min="1" max="10">
-      </div>
-      
-      <div class="button-container">
-        <button id="startLearning">Bắt đầu học</button>
-      </div>
-      
-      <div class="shortcuts">
-        <h3>Phím tắt</h3>
-        <div class="shortcuts-grid">
-          <div class="shortcut">
-            <span>Kiểm tra câu trả lời</span>
-            <span class="shortcut-key">Enter</span>
-          </div>
-          <div class="shortcut">
-            <span>Bỏ qua từ hiện tại</span>
-            <span class="shortcut-key">Ctrl + S</span>
-          </div>
-          <div class="shortcut">
-            <span>Hiện hộp thoại thoát/ẩn</span>
-            <span class="shortcut-key">ESC</span>
-          </div>
-          <div class="shortcut">
-            <span>Bật/tắt toàn màn hình</span>
-            <span class="shortcut-key">F11</span>
-          </div>
+    <div class="container">
+        <h1>Học từ vựng tiếng Nhật</h1>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="input">Nhập từ vựng</button>
+            <button class="tab" data-tab="learning" disabled>Học từ vựng</button>
+            <button class="tab" data-tab="wrong" disabled>Danh sách từ sai</button>
         </div>
-      </div>
-    </div>
-    
-    <!-- Tab Học từ vựng -->
-    <div class="tab-content" id="learning">
-      <div class="progress-container">
-        <div class="progress-info">
-          <span id="progressText">0/0</span>
-          <span id="cycleText">Chu kỳ: 1/2</span>
+
+        <!-- Tab Nhập từ vựng -->
+        <div class="tab-content active" id="input">
+            <div class="input-group">
+                <label for="vocabularyInput">Nhập danh sách từ vựng (định dạng: Kanji=Hiragana=Nghĩa tiếng Việt)</label>
+                <textarea id="vocabularyInput" placeholder="赤い=あかい=đỏ&#10;青い=あおい=xanh lam&#10;白い=しろい=trắng"></textarea>
+            </div>
+
+            <div class="checkbox-container">
+                <input type="checkbox" id="shuffleCheckbox">
+                <label for="shuffleCheckbox">Đảo thứ tự từ vựng</label>
+            </div>
+
+            <div class="input-group">
+                <label for="cycleCount">Số chu kỳ lặp lại</label>
+                <input type="number" id="cycleCount" value="2" min="1" max="10">
+            </div>
+
+            <div class="button-container">
+                <button id="startLearning">Bắt đầu học</button>
+            </div>
+
+            <div class="shortcuts">
+                <h3>Phím tắt</h3>
+                <div class="shortcuts-grid">
+                    <div class="shortcut">
+                        <span>Kiểm tra câu trả lời</span>
+                        <span class="shortcut-key">Enter</span>
+                    </div>
+                    <div class="shortcut">
+                        <span>Bỏ qua từ hiện tại</span>
+                        <span class="shortcut-key">Ctrl + S</span>
+                    </div>
+                    <div class="shortcut">
+                        <span>Hiện hộp thoại thoát/ẩn</span>
+                        <span class="shortcut-key">ESC</span>
+                    </div>
+                    <div class="shortcut">
+                        <span>Bật/tắt toàn màn hình</span>
+                        <span class="shortcut-key">F11</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="progress-bar">
-          <div class="progress-bar-fill" style="width: 0%"></div>
+
+        <!-- Tab Học từ vựng -->
+        <div class="tab-content" id="learning">
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span id="progressText">0/0</span>
+                    <span id="cycleText">Chu kỳ: 1/2</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="kanji-display" id="kanjiDisplay"></div>
+
+            <div class="input-group">
+                <label for="answerInput">Nhập Hiragana:</label>
+                <input type="text" id="answerInput" placeholder="Nhập phiên âm Hiragana">
+            </div>
+
+            <div class="button-container">
+                <button id="checkAnswer">Kiểm tra (Enter)</button>
+                <button id="skipWord">Bỏ từ này (Ctrl+S)</button>
+            </div>
+
+            <div class="result hidden" id="result"></div>
+
+            <div class="meaning" id="meaning"></div>
+
+            <div class="button-container">
+                <button id="restartLearning">Học lại từ đầu</button>
+            </div>
         </div>
-      </div>
-      
-      <div class="kanji-display" id="kanjiDisplay"></div>
-      
-      <div class="input-group">
-        <label for="answerInput">Nhập Hiragana:</label>
-        <input type="text" id="answerInput" placeholder="Nhập phiên âm Hiragana">
-      </div>
-      
-      <div class="button-container">
-        <button id="checkAnswer">Kiểm tra (Enter)</button>
-        <button id="skipWord">Bỏ từ này (Ctrl+S)</button>
-      </div>
-      
-      <div class="result hidden" id="result"></div>
-      
-      <div class="meaning" id="meaning"></div>
-      
-      <div class="button-container">
-        <button id="restartLearning">Học lại từ đầu</button>
-      </div>
+
+        <!-- Tab Danh sách từ sai -->
+        <div class="tab-content" id="wrong">
+            <h2>Danh sách từ vựng sai</h2>
+            <textarea id="wrongWords" readonly></textarea>
+
+            <div class="button-container">
+                <button id="copyAndRelearn">Sao chép và học lại</button>
+            </div>
+        </div>
     </div>
-    
-    <!-- Tab Danh sách từ sai -->
-    <div class="tab-content" id="wrong">
-      <h2>Danh sách từ vựng sai</h2>
-      <textarea id="wrongWords" readonly></textarea>
-      
-      <div class="button-container">
-        <button id="copyAndRelearn">Sao chép và học lại</button>
-      </div>
-    </div>
-  </div>
-  
-  <footer>
-      <p>© 2025 - Tiếng Nhật Online & Offline Quy Nhơn</p>
-      <p>Địa chỉ: 22 Tô Hiến Thành, TP Quy Nhơn, Tỉnh Bình Định</p>
-      <p>Zalo: <a href="https://zalo.me/0762756679" target="_blank">0762.75.66.79</a></p>
-  </footer>
-  
-  <script src="script.js"></script>
+
+    <footer>
+        <p>© 2025 - Tiếng Nhật Online & Offline Quy Nhơn</p>
+        <p>Địa chỉ: 22 Tô Hiến Thành, TP Quy Nhơn, Tỉnh Bình Định</p>
+        <p>Zalo: <a href="https://zalo.me/0762756679" target="_blank">0762.75.66.79</a></p>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>
